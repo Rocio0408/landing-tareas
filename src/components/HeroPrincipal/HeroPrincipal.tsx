@@ -1,4 +1,5 @@
 import { Button, Col, Container, Row } from "react-bootstrap";
+import ModalInformativo from "../ModalInformativo/ModalInformativo";
 
 const HeroPrincipal = () => {
   return (
@@ -20,9 +21,13 @@ const HeroPrincipal = () => {
               bajo control.
             </p>
 
-            <Button href="#funciones">
-              Explorar funciones
-            </Button>
+            <div className="d-flex gap-2 flex-wrap">
+              <Button href="#funciones">
+                Explorar funciones
+              </Button>
+
+              <ModalInformativo />
+            </div>
           </Col>
 
           <Col md={5}>
