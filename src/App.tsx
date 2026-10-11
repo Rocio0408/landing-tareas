@@ -1,24 +1,22 @@
 import { Container } from "react-bootstrap";
 import BarraNavegacion from "./components/BarraNavegacion/BarraNavegacion";
+import HeroPrincipal from "./components/HeroPrincipal/HeroPrincipal";
 
 function App() {
   return (
     <>
       <BarraNavegacion />
+      <main>
+        <HeroPrincipal />
 
-      <main id="inicio">
-        <Container className="py-5">
-          <h1>Gestor de Tareas</h1>
-          <p>
-            Organizá tus actividades y mantené tus tareas
-            bajo control.
-          </p>
-
-          <section id="funciones" className="mt-5">
+        <section id="funciones" className="py-5">
+          <Container>
             <h2>Funciones</h2>
-            <p>Próximamente conocerás nuestras funciones.</p>
-          </section>
-        </Container>
+            <p>
+              Próximamente conocerás nuestras funciones.
+            </p>
+          </Container>
+        </section>
       </main>
     </>
   );
