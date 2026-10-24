@@ -6,11 +6,14 @@ import {
   Button,
   Card,
   Col,
+  Modal,
   Row,
   Spinner,
 } from "react-bootstrap";
 
 import {
+  completarTarea,
+  eliminarTarea,
   obtenerMensajeError,
   obtenerTareas,
 } from "../../services/tareaService";
@@ -40,12 +43,15 @@ const formatearFecha = (fecha?: string | null): string => {
 };
 
 function ListaTareas() {
-  const [tareas, setTareas] = useState<Tarea[]>([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
-  const [mostrarModal, setMostrarModal] = useState(false);
-  const [tareaSeleccionada, setTareaSeleccionada] =
-    useState<Tarea | null>(null);
+    const [tareas, setTareas] = useState<Tarea[]>([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState("");
+    const [mostrarModal, setMostrarModal] = useState(false);
+    const [tareaSeleccionada, setTareaSeleccionada] = useState<Tarea | null>(null);
+    const [tareaParaEliminar, setTareaParaEliminar] =
+        useState<Tarea | null>(null);
+    const [idAccionEnCurso, setIdAccionEnCurso] =   useState<string | null>(null);
+    const [errorAccion, setErrorAccion] = useState(""); const [errorEliminacion, setErrorEliminacion] = useState("");
 
   
     const cargarTareas = useCallback(async () => {
@@ -98,6 +104,71 @@ function ListaTareas() {
 
     cerrarModalTarea();
 };
+const solicitarEliminacion = (tarea: Tarea) => {
+  setErrorEliminacion("");
+  setTareaParaEliminar(tarea);
+};
+
+const cancelarEliminacion = () => {
+  if (idAccionEnCurso !== null) return;
+
+  setTareaParaEliminar(null);
+  setErrorEliminacion("");
+};
+
+const confirmarEliminacion = async () => {
+  if (!tareaParaEliminar) return;
+
+  const id = tareaParaEliminar._id;
+
+  setIdAccionEnCurso(id);
+  setErrorEliminacion("");
+
+  try {
+    await eliminarTarea(id);
+
+    setTareas((actuales) =>
+      actuales.filter((tarea) => tarea._id !== id),
+    );
+
+    setTareaParaEliminar(null);
+  } catch (error: unknown) {
+    setErrorEliminacion(
+      obtenerMensajeError(
+        error,
+        "No se pudo eliminar la tarea. Intentá nuevamente.",
+      ),
+    );
+  } finally {
+    setIdAccionEnCurso(null);
+  }
+    };
+
+    const marcarComoCompletada = async (tarea: Tarea) => {
+        setIdAccionEnCurso(tarea._id);
+        setErrorAccion("");
+
+        try {
+            const respuesta = await completarTarea(tarea._id);
+
+            setTareas((actuales) =>
+                actuales.map((actual) =>
+                    actual._id === respuesta.tarea._id
+                        ? respuesta.tarea
+                        : actual,
+            ),
+        );
+    } catch (error: unknown) {
+        setErrorAccion(
+            obtenerMensajeError(
+            error,
+            "No se pudo completar la tarea. Intentá nuevamente.",
+        ),
+        );
+    } finally {
+        setIdAccionEnCurso(null);
+    }
+};
 
   
 useEffect(() => {
@@ -141,7 +212,17 @@ useEffect(() => {
           </p>
         </div>
 
-        
+        {errorAccion && (
+            <Alert
+                variant="danger"
+                dismissible
+                onClose={() => setErrorAccion("")}
+            >
+                {errorAccion}
+            </Alert>
+        )}
+
+
         <div className="d-flex gap-2 flex-wrap">
             <Button
                 variant="primary"
@@ -281,14 +362,38 @@ useEffect(() => {
                     
                     </div>
 
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      className="mt-3 align-self-start"
-                      onClick={() => abrirEdicion(tarea)}
-                    >
-                      Editar
-                    </Button>
+                    <div className="d-flex gap-2 flex-wrap mt-3">
+                        {!tarea.completada && (
+                            <Button
+                            variant="success"
+                            size="sm"
+                            onClick={() => void marcarComoCompletada(tarea)}
+                            disabled={idAccionEnCurso !== null}
+                            >
+                            {idAccionEnCurso === tarea._id
+                                ? "Procesando..."
+                                : "Completar"}
+                            </Button>
+                        )}
+
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={() => abrirEdicion(tarea)}
+                            disabled={idAccionEnCurso !== null}
+                        >
+                            Editar
+                        </Button>
+
+                        <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={() => solicitarEliminacion(tarea)}
+                            disabled={idAccionEnCurso !== null}
+                        >
+                            Eliminar
+                        </Button>
+                    </div>
                   </Card.Body>
                 </Card>
               </Col>
@@ -304,6 +409,52 @@ useEffect(() => {
         onCerrar={cerrarModalTarea}
         onGuardado={manejarTareaGuardada}
       />
+      <Modal
+        show={tareaParaEliminar !== null}
+        onHide={cancelarEliminacion}
+        centered
+        backdrop={idAccionEnCurso !== null ? "static" : true}
+        keyboard={idAccionEnCurso === null}
+    >
+        <Modal.Header closeButton={idAccionEnCurso === null}>
+            <Modal.Title>Eliminar tarea</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+            {errorEliminacion && (
+                <Alert variant="danger">
+                    {errorEliminacion}
+                </Alert>
+            )}
+
+            ¿Seguro que querés eliminar la tarea{" "}
+            <strong>{tareaParaEliminar?.titulo}</strong>?
+
+            <p className="text-secondary small mt-2 mb-0">
+                Esta acción no se puede deshacer.
+            </p>
+        </Modal.Body>
+
+        <Modal.Footer>
+            <Button
+                variant="secondary"
+                onClick={cancelarEliminacion}
+                disabled={idAccionEnCurso !== null}
+            >
+                Cancelar
+            </Button>
+
+            <Button
+                variant="danger"
+                onClick={() => void confirmarEliminacion()}
+                disabled={idAccionEnCurso !== null}
+            >
+                {idAccionEnCurso === tareaParaEliminar?._id
+                    ? "Eliminando..."
+                    : "Sí, eliminar"}
+            </Button>
+        </Modal.Footer>
+    </Modal>
     </section>
   );
 }
