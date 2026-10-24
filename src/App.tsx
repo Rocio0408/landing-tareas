@@ -1,21 +1,19 @@
-import { useEffect } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import BarraNavegacion from "./components/BarraNavegacion/BarraNavegacion";
-import HeroPrincipal from "./components/HeroPrincipal/HeroPrincipal";
-import SeccionFunciones from "./components/SeccionFunciones/SeccionFunciones";
+import PaginaInicio from "./pages/PaginaInicio";
+import PaginaTareas from "./pages/PaginaTareas";
 
 function App() {
-  useEffect(() => {
-    document.title = "Gestor de Tareas | Inicio";
-  }, []);
-
   return (
     <>
       <BarraNavegacion />
-      <main>
-        <HeroPrincipal />
-        <SeccionFunciones />
-      </main>
+
+      <Routes>
+        <Route path="/" element={<PaginaInicio />} />
+        <Route path="/tareas" element={<PaginaTareas />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </>
   );
 }
