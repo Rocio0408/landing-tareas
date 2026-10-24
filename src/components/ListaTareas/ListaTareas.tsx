@@ -1,11 +1,12 @@
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Badge,
   Button,
   Card,
   Col,
+  Form,
   Modal,
   Row,
   Spinner,
@@ -16,13 +17,20 @@ import {
   eliminarTarea,
   obtenerMensajeError,
   obtenerTareas,
+  obtenerTareasPorPrioridad,
+  obtenerTareasProximasAVencer,
 } from "../../services/tareaService";
 
-import type { Tarea } from "../../types/Tarea";
+import type { Prioridad, Tarea } from "../../types/Tarea";
 
 import "./ListaTareas.css";
 
 import ModalTarea from "../ModalTarea/ModalTarea";
+
+type FiltroAplicado =
+  | { tipo: "todas" }
+  | { tipo: "prioridad"; prioridad: Prioridad }
+  | { tipo: "proximas"; dias: number };
 
 const formatearFecha = (fecha?: string | null): string => {
   if (!fecha) {
@@ -52,26 +60,75 @@ function ListaTareas() {
         useState<Tarea | null>(null);
     const [idAccionEnCurso, setIdAccionEnCurso] =   useState<string | null>(null);
     const [errorAccion, setErrorAccion] = useState(""); const [errorEliminacion, setErrorEliminacion] = useState("");
+    const [prioridadSeleccionada, setPrioridadSeleccionada] = useState<Prioridad | "">("");
 
-  
-    const cargarTareas = useCallback(async () => {
+    const [diasSeleccionados, setDiasSeleccionados] = useState("7");
+
+    const [filtroActivo, setFiltroActivo] = useState<FiltroAplicado>({ tipo: "todas" });
+
+
+    const consultarTareas = async (filtro: FiltroAplicado) => {
         setCargando(true);
         setError("");
+        setFiltroActivo(filtro);
 
         try {
-            const tareasObtenidas = await obtenerTareas();
+            let tareasObtenidas: Tarea[];
+
+            if (filtro.tipo === "prioridad") {
+                tareasObtenidas = await obtenerTareasPorPrioridad(
+                    filtro.prioridad,
+                );
+            } else if (filtro.tipo === "proximas") {
+                tareasObtenidas = await obtenerTareasProximasAVencer(
+                    filtro.dias,
+                );
+            } else {
+                tareasObtenidas = await obtenerTareas();
+            }
+
             setTareas(tareasObtenidas);
         } catch (error: unknown) {
             setError(
-            obtenerMensajeError(
-                error,
-                "No se pudieron cargar las tareas.",
-            ),
-        );
-    } finally {
-        setCargando(false);
-    }
-}, []);
+                obtenerMensajeError(
+                    error,
+                    "No se pudieron cargar las tareas.",
+                ),
+            );
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    const cargarTareas = () => consultarTareas(filtroActivo);
+
+
+    const aplicarFiltroPrioridad = () => {
+        if (!prioridadSeleccionada) return;
+
+        void consultarTareas({
+            tipo: "prioridad",
+            prioridad: prioridadSeleccionada,
+        });
+    };
+
+    const consultarProximasAVencer = () => {
+        const dias = Number(diasSeleccionados);
+
+        if (!Number.isInteger(dias) || dias <= 0) return;
+
+        void consultarTareas({
+            tipo: "proximas",
+            dias,
+        });
+    };
+
+    const mostrarTodasLasTareas = () => {
+        setPrioridadSeleccionada("");
+        void consultarTareas({ tipo: "todas" });
+    };
+
+
 
     const abrirNuevaTarea = () => {
         setTareaSeleccionada(null);
@@ -102,7 +159,10 @@ function ListaTareas() {
             ),
     );
 
+    setPrioridadSeleccionada("");
     cerrarModalTarea();
+    void consultarTareas({ tipo: "todas" });
+
 };
 const solicitarEliminacion = (tarea: Tarea) => {
   setErrorEliminacion("");
@@ -170,7 +230,7 @@ const confirmarEliminacion = async () => {
     }
 };
 
-  
+
 useEffect(() => {
     let sigueMontado = true;
 
@@ -242,6 +302,87 @@ useEffect(() => {
 
       </div>
 
+
+    <Card className="border-0 shadow-sm mb-4">
+        <Card.Body>
+            <Row className="g-3 align-items-end">
+                <Col xs={12} md={4}>
+                    <Form.Group controlId="filtro-prioridad">
+                        <Form.Label>Filtrar por prioridad</Form.Label>
+
+                        <Form.Select
+                            value={prioridadSeleccionada}
+                            onChange={(evento) =>
+                                setPrioridadSeleccionada(
+                                    evento.target.value as Prioridad | "",
+                                )
+                            }
+                            disabled={cargando}
+                        >
+                            <option value="">Seleccioná una prioridad</option>
+                            <option value="alta">Alta</option>
+                            <option value="media">Media</option>
+                            <option value="baja">Baja</option>
+                        </Form.Select>
+                    </Form.Group>
+                </Col>
+
+            <Col xs={12} md={2}>
+                <Button
+                className="w-100"
+                onClick={aplicarFiltroPrioridad}
+                disabled={cargando || !prioridadSeleccionada}
+            >
+                Filtrar
+                </Button>
+            </Col>
+
+            <Col xs={12} md={2}>
+                <Form.Group controlId="dias-proximos">
+                <Form.Label>Próximos días</Form.Label>
+
+                <Form.Control
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={diasSeleccionados}
+                    onChange={(evento) =>
+                    setDiasSeleccionados(evento.target.value)
+                    }
+                    disabled={cargando}
+                />
+                </Form.Group>
+            </Col>
+
+            <Col xs={12} md={4}>
+                <div className="d-flex gap-2">
+                    <Button
+                        variant="outline-primary"
+                        className="flex-fill"
+                        onClick={consultarProximasAVencer}
+                        disabled={
+                            cargando ||
+                            !Number.isInteger(Number(diasSeleccionados)) ||
+                            Number(diasSeleccionados) <= 0
+                            }
+                        >
+                        Próximas a vencer
+                    </Button>
+
+                    <Button
+                        variant="outline-secondary"
+                        onClick={mostrarTodasLasTareas}
+                        disabled={cargando}
+                    >
+                        Ver todas
+                    </Button>
+                    </div>
+                </Col>
+            </Row>
+        </Card.Body>
+        </Card>
+
+
       {error && (
         <Alert variant="danger" className="mb-4">
           <Alert.Heading className="h6">
@@ -269,14 +410,21 @@ useEffect(() => {
         </div>
       )}
 
-      {!cargando && !error && tareas.length === 0 && (
-        <Alert variant="info">
-          <Alert.Heading className="h6">
-            Todavía no hay tareas
-          </Alert.Heading>
-          Cuando creemos la primera tarea, aparecerá en esta sección.
-        </Alert>
-      )}
+
+        {!cargando && !error && tareas.length === 0 && (
+            <Alert variant="info">
+                <Alert.Heading className="h6">
+                    {filtroActivo.tipo === "todas"
+                        ? "Todavía no hay tareas"
+                        : "No encontramos tareas para este filtro"}
+                </Alert.Heading>
+
+                {filtroActivo.tipo === "todas"
+                    ? "Cuando creemos la primera tarea, aparecerá en esta sección."
+                    : "Probá con otra prioridad, un rango de días distinto o seleccioná Ver todas."}
+            </Alert>
+        )}
+
 
       {!cargando && tareas.length > 0 && (
         <>
@@ -358,9 +506,7 @@ useEffect(() => {
                             </Badge>
                           ))}
                         </div>
-                      )}
-                    
-                    </div>
+                      )}                    </div>
 
                     <div className="d-flex gap-2 flex-wrap mt-3">
                         {!tarea.completada && (
@@ -400,7 +546,6 @@ useEffect(() => {
             ))}
           </Row>
         </>
-      
       )}
 
       <ModalTarea
