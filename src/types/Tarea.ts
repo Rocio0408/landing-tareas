@@ -14,7 +14,7 @@ export type Tarea = {
 export type TareaFormulario = {
   titulo: string;
   descripcion?: string;
-  fechaLimite?: string;
+  fechaLimite?: string | null;
   prioridad: Prioridad;
   etiquetas: string[];
 };

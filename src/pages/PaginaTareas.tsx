@@ -1,5 +1,8 @@
+
 import { useEffect } from "react";
-import { Alert, Container } from "react-bootstrap";
+import { Container } from "react-bootstrap";
+
+import ListaTareas from "../components/ListaTareas/ListaTareas";
 
 function PaginaTareas() {
   useEffect(() => {
@@ -19,16 +22,12 @@ function PaginaTareas() {
           </h1>
 
           <p className="lead text-secondary">
-            Organizá tus actividades, prioridades y fechas de vencimiento
-            desde un solo lugar.
+            Organizá tus actividades, prioridades y fechas de
+            vencimiento desde un solo lugar.
           </p>
         </div>
 
-        <Alert variant="info">
-          Estamos preparando el gestor de tareas.
-          Próximamente vas a poder consultar y administrar tus tareas
-          desde esta página.
-        </Alert>
+        <ListaTareas />
       </Container>
     </main>
   );

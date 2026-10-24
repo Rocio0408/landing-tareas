@@ -1,0 +1,41 @@
+
+.lista-tareas {
+  margin-top: 2rem;
+}
+
+.tarea-card {
+  border: 1px solid #e9ecef;
+  border-radius: 1rem;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.tarea-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.75rem 1.5rem rgb(0 0 0 / 8%) !important;
+}
+
+.tarea-card--completada {
+  background-color: #f8f9fa;
+}
+
+.tarea-card__titulo--completada {
+  color: #6c757d;
+  text-decoration: line-through;
+}
+
+.tarea-etiqueta {
+  border: 1px solid #dee2e6;
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarea-card {
+    transition: none;
+  }
+
+  .tarea-card:hover {
+    transform: none;
+  }
+}
