@@ -32,23 +32,42 @@ type FiltroAplicado =
   | { tipo: "prioridad"; prioridad: Prioridad }
   | { tipo: "proximas"; dias: number };
 
-const formatearFecha = (fecha?: string | null): string => {
-  if (!fecha) {
-    return "Sin fecha límite";
-  }
+    const formatearFecha = (fecha?: string | null): string => {
+    if (!fecha) {
+      return "Sin fecha límite";
+    }
 
-  const fechaConvertida = new Date(fecha);
+    // Tomamos la fecha calendario sin convertirla de zona horaria.
+    const fechaISO = fecha.slice(0, 10);
+    const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fechaISO);
 
-  if (Number.isNaN(fechaConvertida.getTime())) {
-    return "Fecha no válida";
-  }
+    if (!partes) {
+      return "Fecha no válida";
+    }
 
-  return new Intl.DateTimeFormat("es-AR", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(fechaConvertida);
-};
+    const anio = Number(partes[1]);
+    const mes = Number(partes[2]);
+    const dia = Number(partes[3]);
+
+    // Creamos la fecha en horario local para conservar el día elegido.
+    const fechaConvertida = new Date(anio, mes - 1, dia);
+
+    const fechaValida =
+      fechaConvertida.getFullYear() === anio &&
+      fechaConvertida.getMonth() === mes - 1 &&
+      fechaConvertida.getDate() === dia;
+
+    if (!fechaValida) {
+      return "Fecha no válida";
+    }
+
+    return new Intl.DateTimeFormat("es-AR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(fechaConvertida);
+  };
+
 
 function ListaTareas() {
     const [tareas, setTareas] = useState<Tarea[]>([]);
