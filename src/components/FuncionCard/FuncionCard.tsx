@@ -1,4 +1,5 @@
 import { Card } from "react-bootstrap";
+import "./FuncionCard.css";
 
 interface FuncionCardProps {
   titulo: string;
@@ -12,15 +13,19 @@ const FuncionCard = ({
   categoria,
 }: FuncionCardProps) => {
   return (
-    <Card className="h-100 shadow-sm">
+    <Card className="funcion-card h-100">
       <Card.Body>
-        <Card.Subtitle className="mb-2 text-muted">
+        <Card.Subtitle className="funcion-card__categoria">
           {categoria}
         </Card.Subtitle>
 
-        <Card.Title>{titulo}</Card.Title>
+        <Card.Title className="funcion-card__titulo">
+          {titulo}
+        </Card.Title>
 
-        <Card.Text>{descripcion}</Card.Text>
+        <Card.Text className="funcion-card__descripcion">
+          {descripcion}
+        </Card.Text>
       </Card.Body>
     </Card>
   );

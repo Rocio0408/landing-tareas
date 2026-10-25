@@ -24,13 +24,13 @@ const ModalInformativo = () => {
 
         <Modal.Body>
           <p>
-            Nuestro gestor de tareas busca facilitar
-            la organización de actividades y pendientes.
+            TaskFlow te permite crear, consultar, editar y eliminar
+            tareas desde una misma interfaz.
           </p>
 
           <p className="mb-0">
-            Próximamente incorporaremos funcionalidades
-            para administrar tareas mediante nuestra API REST.
+            También podés asignar prioridades, definir fechas límite,
+            marcar tareas como completadas y filtrar tus pendientes.
           </p>
         </Modal.Body>
 

@@ -1,0 +1,14 @@
+.seccion-funciones {
+  padding: clamp(3.5rem, 6vw, 5.5rem) 0;
+  background-color: #f1f5f9;
+}
+
+.seccion-funciones .row {
+  align-items: stretch;
+}
+
+@media (max-width: 767.98px) {
+  .seccion-funciones {
+    padding: 3.5rem 0;
+  }
+}
