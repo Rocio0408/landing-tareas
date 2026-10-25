@@ -1,6 +1,7 @@
 import { Col, Container, Row } from "react-bootstrap";
 import FuncionCard from "../FuncionCard/FuncionCard";
 import TituloSeccion from "../TituloSeccion/TituloSeccion";
+import "./SeccionFunciones.css";
 
 const funciones = [
   {
@@ -8,31 +9,31 @@ const funciones = [
     categoria: "Tareas",
     titulo: "Gestión de tareas",
     descripcion:
-      "Creá, consultá y organizá tus tareas de forma sencilla.",
+      "Creá, consultá, editá y eliminá tus tareas desde un solo lugar.",
   },
   {
     id: 2,
     categoria: "Organización",
     titulo: "Prioridades",
     descripcion:
-      "Clasificá tus tareas según su nivel de prioridad: alta, media o baja.",
+      "Asigna prioridades y filtrá las tareas según su importancia",
   },
   {
     id: 3,
     categoria: "Planificación",
     titulo: "Fechas de vencimiento",
     descripcion:
-      "Organizá tus actividades estableciendo fechas límite para cada tarea.",
+      "Definí fechas limite y consultá las teras proximas a vencer.",
   },
 ];
 
 const SeccionFunciones = () => {
   return (
-    <section id="funciones" className="py-5 bg-light">
+    <section id="funciones" className="seccion-funciones">
       <Container>
         <TituloSeccion
           titulo="Organizá tus tareas de manera sencilla"
-          subtitulo="Conocé algunas de las funcionalidades que ofrecerá nuestra aplicación."
+          subtitulo="Conocé las herramientas disponibles para organizar y administrar tus tareas."
         />
 
         <Row className="g-4">
